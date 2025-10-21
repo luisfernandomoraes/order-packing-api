@@ -273,12 +273,13 @@ Checks if the API is running.
 
 **POST** `/api/calculate`
 
-Calculates the best package combination for an order.
+Calculates the best package combination for an order with specified pack sizes.
 
 **Request Body**:
 ```json
 {
-  "order": 501
+  "order": 501,
+  "pack_sizes": [250, 500, 1000, 2000, 5000]
 }
 ```
 
@@ -299,49 +300,9 @@ Calculates the best package combination for an order.
 
 **Validations**:
 - ❌ `order < 0`: Returns 400 "Order must be positive"
+- ❌ `pack_sizes` empty: Returns 400 "Pack sizes cannot be empty"
+- ❌ Negative or zero pack sizes: Returns 400 "All pack sizes must be positive"
 - ❌ Invalid JSON: Returns 400 "Invalid request body"
-
----
-
-### Get Package Sizes
-
-**GET** `/api/pack-sizes`
-
-Returns the configured package sizes.
-
-**Response**:
-```json
-{
-  "pack_sizes": [250, 500, 1000, 2000, 5000]
-}
-```
-
----
-
-### Update Package Sizes
-
-**POST** `/api/pack-sizes`
-
-Updates the available package sizes.
-
-**Request Body**:
-```json
-{
-  "pack_sizes": [100, 250, 500, 1000]
-}
-```
-
-**Response**:
-```json
-{
-  "message": "Pack sizes updated successfully",
-  "pack_sizes": [100, 250, 500, 1000]
-}
-```
-
-**Validations**:
-- ❌ Empty array: Returns 400 "Pack sizes cannot be empty"
-- ❌ Negative or zero values: Returns 400 "All pack sizes must be positive"
 
 ---
 
@@ -411,9 +372,6 @@ make help           # Show help
 ```bash
 # Server port (default: 8080)
 PORT=8080
-
-# Default package sizes (default: 250,500,1000,2000,5000)
-DEFAULT_PACK_SIZES=250,500,1000,2000,5000
 ```
 
 ## 🧪 Testing
@@ -476,24 +434,21 @@ go test -bench=. ./internal/domain
 # Health check
 curl http://localhost:8080/health
 
-# Calculate packages
+# Calculate packages with specific pack sizes
 curl -X POST http://localhost:8080/api/calculate \
   -H "Content-Type: application/json" \
-  -d '{"order": 501}'
+  -d '{"order": 501, "pack_sizes": [250, 500, 1000, 2000, 5000]}'
 
-# Get sizes
-curl http://localhost:8080/api/pack-sizes
-
-# Update sizes
-curl -X POST http://localhost:8080/api/pack-sizes \
+# Calculate with custom pack sizes
+curl -X POST http://localhost:8080/api/calculate \
   -H "Content-Type: application/json" \
-  -d '{"pack_sizes": [100, 250, 500, 1000]}'
+  -d '{"order": 263, "pack_sizes": [100, 250, 500, 1000]}'
 ```
 
 ### Using the Web Interface
 
 1. Access `http://localhost:8080`
-2. Configure the desired package sizes
+2. Configure the desired package sizes in the input fields
 3. Enter the order quantity
 4. Click "Calculate"
 5. See the result with the optimal package distribution
@@ -509,7 +464,7 @@ curl -X POST http://localhost:8080/api/pack-sizes \
 
 - **Algorithm**: O(n × m) where n ≈ order size, m = number of sizes
 - **Memory**: O(n) for dynamic programming table
-- **Concurrency**: Thread-safe with `sync.RWMutex` for pack sizes read/write
+- **Stateless**: Each request is independent, fully thread-safe
 
 ### Benchmarks (Macbook Pro M1, Go 1.25)
 

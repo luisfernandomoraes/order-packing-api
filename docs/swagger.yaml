@@ -6,6 +6,16 @@ definitions:
         example: 501
         minimum: 0
         type: integer
+      pack_sizes:
+        example:
+        - 250
+        - 500
+        - 1000
+        - 2000
+        - 5000
+        items:
+          type: integer
+        type: array
     type: object
   handlers.CalculateResponse:
     properties:
@@ -39,47 +49,6 @@ definitions:
         example: 2
         type: integer
     type: object
-  handlers.PackSizesRequest:
-    properties:
-      pack_sizes:
-        example:
-        - 100
-        - 250
-        - 500
-        - 1000
-        items:
-          type: integer
-        type: array
-    type: object
-  handlers.PackSizesResponse:
-    properties:
-      pack_sizes:
-        example:
-        - 250
-        - 500
-        - 1000
-        - 2000
-        - 5000
-        items:
-          type: integer
-        type: array
-    type: object
-  handlers.PackSizesUpdateResponse:
-    properties:
-      message:
-        example: Pack sizes updated successfully
-        type: string
-      pack_sizes:
-        example:
-        - 250
-        - 500
-        - 1000
-        - 2000
-        - 5000
-        items:
-          type: integer
-        type: array
-    type: object
 host: localhost:8080
 info:
   contact:
@@ -101,7 +70,7 @@ paths:
       description: Calculates the best package combination to fulfill an order, minimizing
         items shipped and number of packages
       parameters:
-      - description: Order quantity
+      - description: Order quantity and package sizes
         in: body
         name: request
         required: true
@@ -115,7 +84,8 @@ paths:
           schema:
             $ref: '#/definitions/handlers.CalculateResponse'
         "400":
-          description: Bad Request - Invalid order or negative value
+          description: Bad Request - Invalid order, negative value, or invalid pack
+            sizes
           schema:
             additionalProperties:
               type: string
@@ -129,46 +99,6 @@ paths:
       summary: Calculate optimal package combination
       tags:
       - calculate
-  /api/pack-sizes:
-    get:
-      description: Returns the currently configured package sizes
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.PackSizesResponse'
-      summary: Get current package sizes
-      tags:
-      - pack-sizes
-    post:
-      consumes:
-      - application/json
-      description: Updates the available package sizes used for calculations
-      parameters:
-      - description: New pack sizes
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/handlers.PackSizesRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.PackSizesUpdateResponse'
-        "400":
-          description: Bad Request - Empty array or non-positive values
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update package sizes
-      tags:
-      - pack-sizes
   /health:
     get:
       description: Returns the health status of the API
