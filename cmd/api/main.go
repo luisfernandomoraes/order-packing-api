@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/luisfernandomoraes/order-packing-api/internal/config"
-	"github.com/luisfernandomoraes/order-packing-api/internal/domain"
 	"github.com/luisfernandomoraes/order-packing-api/internal/server"
 
 	_ "github.com/luisfernandomoraes/order-packing-api/docs" // Swagger docs
@@ -39,11 +38,8 @@ func main() {
 		log.Fatalf("❌ Failed to load configuration: %v", err)
 	}
 
-	// Initialize domain services
-	calculator := domain.NewPackCalculator(cfg.DefaultPackSizes)
-
 	// Create and start server
-	srv := server.New(cfg, calculator)
+	srv := server.New(cfg)
 
 	// Graceful shutdown
 	quit := make(chan os.Signal, 1)
@@ -51,7 +47,6 @@ func main() {
 
 	go func() {
 		log.Printf("🚀 Server starting on port %s", cfg.Port)
-		log.Printf("📦 Default pack sizes: %v", cfg.DefaultPackSizes)
 		log.Printf("🌐 API: http://localhost:%s/api", cfg.Port)
 		log.Printf("📚 Swagger docs: http://localhost:%s/swagger/index.html", cfg.Port)
 		log.Printf("💚 Health: http://localhost:%s/health", cfg.Port)

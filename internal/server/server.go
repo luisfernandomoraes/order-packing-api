@@ -5,19 +5,16 @@ import (
 	"net/http"
 
 	"github.com/luisfernandomoraes/order-packing-api/internal/config"
-	"github.com/luisfernandomoraes/order-packing-api/internal/domain"
 )
 
 type Server struct {
 	httpServer *http.Server
-	calculator *domain.PackCalculator
 	config     config.Config
 }
 
-func New(cfg config.Config, calculator *domain.PackCalculator) *Server {
+func New(cfg config.Config) *Server {
 	srv := &Server{
-		calculator: calculator,
-		config:     cfg,
+		config: cfg,
 	}
 
 	srv.httpServer = &http.Server{

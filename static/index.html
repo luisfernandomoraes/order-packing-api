@@ -323,8 +323,6 @@
             <input type="number" id="pack4" placeholder="2000" value="2000">
             <input type="number" id="pack5" placeholder="5000" value="5000">
         </div>
-        <button type="submit" class="btn-primary" onclick="updatePackSizes()">Submit pack sizes change</button>
-        <div id="packSizeMessage" class="message"></div>
     </div>
 
     <!-- Calculate Section -->
@@ -359,37 +357,17 @@
 </div>
 
 <script>
-    const API_URL = 'http://localhost:8080';
+    const API_URL = window.location.origin;
 
-    // Load pack sizes on page load
-    window.addEventListener('load', loadCurrentPackSizes);
+    async function calculatePacks() {
+        const order = parseInt(document.getElementById('orderInput').value);
 
-    async function loadCurrentPackSizes() {
-        try {
-            const response = await fetch(`${API_URL}/api/pack-sizes`);
-            const data = await response.json();
-
-            if (data.pack_sizes) {
-                const inputs = [
-                    document.getElementById('pack1'),
-                    document.getElementById('pack2'),
-                    document.getElementById('pack3'),
-                    document.getElementById('pack4'),
-                    document.getElementById('pack5')
-                ];
-
-                data.pack_sizes.forEach((size, index) => {
-                    if (inputs[index]) {
-                        inputs[index].value = size;
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('Error loading pack sizes:', error);
+        if (isNaN(order) || order < 0) {
+            showMessage('calculateMessage', 'Please enter a valid order quantity', 'error');
+            return;
         }
-    }
 
-    async function updatePackSizes() {
+        // Get pack sizes from inputs
         const pack1 = parseInt(document.getElementById('pack1').value);
         const pack2 = parseInt(document.getElementById('pack2').value);
         const pack3 = parseInt(document.getElementById('pack3').value);
@@ -399,37 +377,7 @@
         const packSizes = [pack1, pack2, pack3, pack4, pack5].filter(size => !isNaN(size) && size > 0);
 
         if (packSizes.length === 0) {
-            showMessage('packSizeMessage', 'Please enter at least one valid pack size', 'error');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${API_URL}/api/pack-sizes`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ pack_sizes: packSizes })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                showMessage('packSizeMessage', 'Pack sizes updated successfully!', 'success');
-            } else {
-                showMessage('packSizeMessage', data.message || 'Error updating pack sizes', 'error');
-            }
-        } catch (error) {
-            showMessage('packSizeMessage', 'Error connecting to API', 'error');
-            console.error('Error:', error);
-        }
-    }
-
-    async function calculatePacks() {
-        const order = parseInt(document.getElementById('orderInput').value);
-
-        if (isNaN(order) || order < 0) {
-            showMessage('calculateMessage', 'Please enter a valid order quantity', 'error');
+            showMessage('calculateMessage', 'Please enter at least one valid pack size', 'error');
             return;
         }
 
@@ -442,7 +390,10 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ order: order })
+                body: JSON.stringify({
+                    order: order,
+                    pack_sizes: packSizes
+                })
             });
 
             const data = await response.json();
@@ -451,7 +402,7 @@
                 displayResults(data);
                 showMessage('calculateMessage', `Total items: ${data.total_items} (Surplus: ${data.total_items - order})`, 'success');
             } else {
-                showMessage('calculateMessage', 'Error calculating packs', 'error');
+                showMessage('calculateMessage', data.error || 'Error calculating packs', 'error');
             }
         } catch (error) {
             showMessage('calculateMessage', 'Error connecting to API', 'error');

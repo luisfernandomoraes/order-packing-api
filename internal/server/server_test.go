@@ -16,7 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/luisfernandomoraes/order-packing-api/internal/config"
-	"github.com/luisfernandomoraes/order-packing-api/internal/domain"
 	"github.com/luisfernandomoraes/order-packing-api/internal/middleware"
 )
 
@@ -26,7 +25,7 @@ type httpClient interface {
 	Post(url, contentType string, body io.Reader) (*http.Response, error)
 }
 
-func setupIntegrationServer(t *testing.T) (*domain.PackCalculator, *httptest.Server, httpClient) {
+func setupIntegrationServer(t *testing.T) (*httptest.Server, httpClient) {
 	t.Helper()
 
 	_, filename, _, ok := runtime.Caller(0)
@@ -49,16 +48,15 @@ func setupIntegrationServer(t *testing.T) (*domain.PackCalculator, *httptest.Ser
 		IdleTimeout:      time.Second,
 	}
 
-	calculator := domain.NewPackCalculator(cfg.DefaultPackSizes)
-	srv := New(cfg, calculator)
+	srv := New(cfg)
 	ts := httptest.NewServer(srv.setupRoutes())
 	t.Cleanup(ts.Close)
 
-	return calculator, ts, ts.Client()
+	return ts, ts.Client()
 }
 
 func TestIntegration_Endpoints(t *testing.T) {
-	_, ts, client := setupIntegrationServer(t)
+	ts, client := setupIntegrationServer(t)
 
 	t.Run("health endpoint returns status", func(t *testing.T) {
 		resp, err := client.Get(ts.URL + "/health")
@@ -75,9 +73,11 @@ func TestIntegration_Endpoints(t *testing.T) {
 		assert.Equal(t, "Order Packing Calculator API", body["app"])
 	})
 
-
 	t.Run("calculate POST handles valid payload", func(t *testing.T) {
-		payload := map[string]int{"order": 250}
+		payload := map[string]interface{}{
+			"order":      250,
+			"pack_sizes": []int{250, 500, 1000},
+		}
 		resp := doJSONRequest(t, client, http.MethodPost, ts.URL+"/api/calculate", payload)
 		defer resp.Body.Close()
 
@@ -98,7 +98,32 @@ func TestIntegration_Endpoints(t *testing.T) {
 	})
 
 	t.Run("calculate POST rejects negative order", func(t *testing.T) {
-		payload := map[string]int{"order": -5}
+		payload := map[string]interface{}{
+			"order":      -5,
+			"pack_sizes": []int{250, 500, 1000},
+		}
+		resp := doJSONRequest(t, client, http.MethodPost, ts.URL+"/api/calculate", payload)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	})
+
+	t.Run("calculate POST rejects empty pack sizes", func(t *testing.T) {
+		payload := map[string]interface{}{
+			"order":      250,
+			"pack_sizes": []int{},
+		}
+		resp := doJSONRequest(t, client, http.MethodPost, ts.URL+"/api/calculate", payload)
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	})
+
+	t.Run("calculate POST rejects negative pack sizes", func(t *testing.T) {
+		payload := map[string]interface{}{
+			"order":      250,
+			"pack_sizes": []int{250, -500, 1000},
+		}
 		resp := doJSONRequest(t, client, http.MethodPost, ts.URL+"/api/calculate", payload)
 		defer resp.Body.Close()
 
@@ -119,63 +144,6 @@ func TestIntegration_Endpoints(t *testing.T) {
 
 	t.Run("calculate method not allowed", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodDelete, ts.URL+"/api/calculate", nil)
-		require.NoError(t, err)
-
-		resp, err := client.Do(req)
-		require.NoError(t, err)
-		defer resp.Body.Close()
-
-		assert.Equal(t, http.StatusMethodNotAllowed, resp.StatusCode)
-	})
-
-	t.Run("pack sizes GET returns defaults", func(t *testing.T) {
-		resp, err := client.Get(ts.URL + "/api/pack-sizes")
-		require.NoError(t, err)
-		defer resp.Body.Close()
-
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		var body struct {
-			PackSizes []int `json:"pack_sizes"`
-		}
-		require.NoError(t, json.NewDecoder(resp.Body).Decode(&body))
-
-		assert.Equal(t, []int{250, 500, 1000}, body.PackSizes)
-	})
-
-	t.Run("pack sizes POST updates sizes", func(t *testing.T) {
-		payload := map[string][]int{"pack_sizes": {750, 250}}
-		resp := doJSONRequest(t, client, http.MethodPost, ts.URL+"/api/pack-sizes", payload)
-		defer resp.Body.Close()
-
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		var body struct {
-			PackSizes []int `json:"pack_sizes"`
-		}
-		require.NoError(t, json.NewDecoder(resp.Body).Decode(&body))
-
-		assert.Equal(t, []int{250, 750}, body.PackSizes)
-	})
-
-	t.Run("pack sizes POST validates input", func(t *testing.T) {
-		payload := map[string][]int{"pack_sizes": {}}
-		resp := doJSONRequest(t, client, http.MethodPost, ts.URL+"/api/pack-sizes", payload)
-		defer resp.Body.Close()
-
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-	})
-
-	t.Run("pack sizes POST rejects negative values", func(t *testing.T) {
-		payload := map[string][]int{"pack_sizes": {250, -10}}
-		resp := doJSONRequest(t, client, http.MethodPost, ts.URL+"/api/pack-sizes", payload)
-		defer resp.Body.Close()
-
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-	})
-
-	t.Run("pack sizes method not allowed", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodDelete, ts.URL+"/api/pack-sizes", nil)
 		require.NoError(t, err)
 
 		resp, err := client.Do(req)

@@ -7,14 +7,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/luisfernandomoraes/order-packing-api/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewCalculateHandler(t *testing.T) {
-	calculator := domain.NewPackCalculator([]int{250, 500, 1000})
-	handler := NewCalculateHandler(calculator)
+	handler := NewCalculateHandler()
 	assert.NotNil(t, handler)
 }
 
@@ -53,8 +51,7 @@ func TestCalculateHandler_Handle_MethodRouting(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			calculator := domain.NewPackCalculator([]int{250, 500, 1000})
-			handler := NewCalculateHandler(calculator)
+			handler := NewCalculateHandler()
 			req := httptest.NewRequest(tt.method, "/calculate", nil)
 			w := httptest.NewRecorder()
 
@@ -74,7 +71,6 @@ func TestCalculateHandler_HandlePost(t *testing.T) {
 	tests := []struct {
 		name               string
 		requestBody        map[string]interface{}
-		packSizes          []int
 		expectedStatus     int
 		expectedOrder      int
 		expectedTotalItems int
@@ -82,55 +78,94 @@ func TestCalculateHandler_HandlePost(t *testing.T) {
 		expectedError      string
 	}{
 		{
-			name:               "should calculate order from JSON body",
-			requestBody:        map[string]interface{}{"order": 501},
-			packSizes:          []int{250, 500, 1000},
+			name: "should calculate order from JSON body",
+			requestBody: map[string]interface{}{
+				"order":      501,
+				"pack_sizes": []int{250, 500, 1000},
+			},
 			expectedStatus:     http.StatusOK,
 			expectedOrder:      501,
 			expectedTotalItems: 750,
 			shouldHaveError:    false,
 		},
 		{
-			name:               "should handle order zero",
-			requestBody:        map[string]interface{}{"order": 0},
-			packSizes:          []int{250, 500, 1000},
+			name: "should handle order zero",
+			requestBody: map[string]interface{}{
+				"order":      0,
+				"pack_sizes": []int{250, 500, 1000},
+			},
 			expectedStatus:     http.StatusOK,
 			expectedOrder:      0,
 			expectedTotalItems: 0,
 			shouldHaveError:    false,
 		},
 		{
-			name:            "should reject negative order",
-			requestBody:     map[string]interface{}{"order": -100},
-			packSizes:       []int{250, 500, 1000},
+			name: "should reject negative order",
+			requestBody: map[string]interface{}{
+				"order":      -100,
+				"pack_sizes": []int{250, 500, 1000},
+			},
 			expectedStatus:  http.StatusBadRequest,
 			shouldHaveError: true,
 			expectedError:   "Order must be positive",
 		},
 		{
-			name:               "should handle large order",
-			requestBody:        map[string]interface{}{"order": 12001},
-			packSizes:          []int{250, 500, 1000, 2000, 5000},
+			name: "should handle large order",
+			requestBody: map[string]interface{}{
+				"order":      12001,
+				"pack_sizes": []int{250, 500, 1000, 2000, 5000},
+			},
 			expectedStatus:     http.StatusOK,
 			expectedOrder:      12001,
 			expectedTotalItems: 12250,
 			shouldHaveError:    false,
 		},
 		{
-			name:               "should handle exact match order",
-			requestBody:        map[string]interface{}{"order": 1000},
-			packSizes:          []int{250, 500, 1000},
+			name: "should handle exact match order",
+			requestBody: map[string]interface{}{
+				"order":      1000,
+				"pack_sizes": []int{250, 500, 1000},
+			},
 			expectedStatus:     http.StatusOK,
 			expectedOrder:      1000,
 			expectedTotalItems: 1000,
 			shouldHaveError:    false,
 		},
+		{
+			name: "should reject empty pack sizes",
+			requestBody: map[string]interface{}{
+				"order":      501,
+				"pack_sizes": []int{},
+			},
+			expectedStatus:  http.StatusBadRequest,
+			shouldHaveError: true,
+			expectedError:   "Pack sizes cannot be empty",
+		},
+		{
+			name: "should reject negative pack size",
+			requestBody: map[string]interface{}{
+				"order":      501,
+				"pack_sizes": []int{250, -500, 1000},
+			},
+			expectedStatus:  http.StatusBadRequest,
+			shouldHaveError: true,
+			expectedError:   "All pack sizes must be positive",
+		},
+		{
+			name: "should reject zero pack size",
+			requestBody: map[string]interface{}{
+				"order":      501,
+				"pack_sizes": []int{250, 0, 1000},
+			},
+			expectedStatus:  http.StatusBadRequest,
+			shouldHaveError: true,
+			expectedError:   "All pack sizes must be positive",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			calculator := domain.NewPackCalculator(tt.packSizes)
-			handler := NewCalculateHandler(calculator)
+			handler := NewCalculateHandler()
 
 			bodyBytes, err := json.Marshal(tt.requestBody)
 			require.NoError(t, err)
@@ -188,8 +223,7 @@ func TestCalculateHandler_HandlePost_InvalidJSON(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			calculator := domain.NewPackCalculator([]int{250, 500, 1000})
-			handler := NewCalculateHandler(calculator)
+			handler := NewCalculateHandler()
 
 			req := httptest.NewRequest(http.MethodPost, "/calculate", bytes.NewBufferString(tt.requestBody))
 			req.Header.Set("Content-Type", "application/json")
@@ -209,10 +243,12 @@ func TestCalculateHandler_HandlePost_InvalidJSON(t *testing.T) {
 
 func TestCalculateHandler_ResponseFormat(t *testing.T) {
 	t.Run("should return all expected fields in response", func(t *testing.T) {
-		calculator := domain.NewPackCalculator([]int{250, 500, 1000})
-		handler := NewCalculateHandler(calculator)
+		handler := NewCalculateHandler()
 
-		bodyBytes, _ := json.Marshal(map[string]interface{}{"order": 501})
+		bodyBytes, _ := json.Marshal(map[string]interface{}{
+			"order":      501,
+			"pack_sizes": []int{250, 500, 1000},
+		})
 		req := httptest.NewRequest(http.MethodPost, "/calculate", bytes.NewBuffer(bodyBytes))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()

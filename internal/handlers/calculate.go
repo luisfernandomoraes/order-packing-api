@@ -7,29 +7,26 @@ import (
 	"github.com/luisfernandomoraes/order-packing-api/internal/response"
 )
 
-type CalculateHandler struct {
-	calculator *domain.PackCalculator
-}
+type CalculateHandler struct{}
 
-func NewCalculateHandler(calculator *domain.PackCalculator) *CalculateHandler {
-	return &CalculateHandler{
-		calculator: calculator,
-	}
+func NewCalculateHandler() *CalculateHandler {
+	return &CalculateHandler{}
 }
 
 // CalculateRequest represents the request body for calculate endpoint
 type CalculateRequest struct {
-	Order int `json:"order" example:"501" minimum:"0"`
+	Order     int   `json:"order" example:"501" minimum:"0"`
+	PackSizes []int `json:"pack_sizes" example:"250,500,1000,2000,5000"`
 }
 
 // CalculateResponse represents the response from calculate endpoint
 type CalculateResponse struct {
-	Order      int            `json:"order" example:"501"`
-	TotalItems int            `json:"total_items" example:"750"`
-	Packs      map[int]int    `json:"packs" example:"250:1,500:1"`
-	PackSizes  []int          `json:"pack_sizes" example:"250,500,1000,2000,5000"`
-	Surplus    int            `json:"surplus" example:"249"`
-	TotalPacks int            `json:"total_packs" example:"2"`
+	Order      int         `json:"order" example:"501"`
+	TotalItems int         `json:"total_items" example:"750"`
+	Packs      map[int]int `json:"packs" example:"250:1,500:1"`
+	PackSizes  []int       `json:"pack_sizes" example:"250,500,1000,2000,5000"`
+	Surplus    int         `json:"surplus" example:"249"`
+	TotalPacks int         `json:"total_packs" example:"2"`
 }
 
 // Handle godoc
@@ -38,9 +35,9 @@ type CalculateResponse struct {
 // @Tags calculate
 // @Accept json
 // @Produce json
-// @Param request body CalculateRequest true "Order quantity"
+// @Param request body CalculateRequest true "Order quantity and package sizes"
 // @Success 200 {object} CalculateResponse
-// @Failure 400 {object} map[string]string "Bad Request - Invalid order or negative value"
+// @Failure 400 {object} map[string]string "Bad Request - Invalid order, negative value, or invalid pack sizes"
 // @Failure 405 {object} map[string]string "Method Not Allowed"
 // @Router /api/calculate [post]
 func (h *CalculateHandler) Handle(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +58,20 @@ func (h *CalculateHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := h.calculator.Calculate(req.Order)
+	if len(req.PackSizes) == 0 {
+		response.Error(w, http.StatusBadRequest, "Pack sizes cannot be empty")
+		return
+	}
+
+	for _, size := range req.PackSizes {
+		if size <= 0 {
+			response.Error(w, http.StatusBadRequest, "All pack sizes must be positive")
+			return
+		}
+	}
+
+	calculator := domain.NewPackCalculator(req.PackSizes)
+	result := calculator.Calculate(req.Order)
 
 	responseData := CalculateResponse{
 		Order:      result.Order,

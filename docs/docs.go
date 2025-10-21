@@ -38,7 +38,7 @@ const docTemplate = `{
                 "summary": "Calculate optimal package combination",
                 "parameters": [
                     {
-                        "description": "Order quantity",
+                        "description": "Order quantity and package sizes",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -55,7 +55,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request - Invalid order or negative value",
+                        "description": "Bad Request - Invalid order, negative value, or invalid pack sizes",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -65,67 +65,6 @@ const docTemplate = `{
                     },
                     "405": {
                         "description": "Method Not Allowed",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/pack-sizes": {
-            "get": {
-                "description": "Returns the currently configured package sizes",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "pack-sizes"
-                ],
-                "summary": "Get current package sizes",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.PackSizesResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Updates the available package sizes used for calculations",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "pack-sizes"
-                ],
-                "summary": "Update package sizes",
-                "parameters": [
-                    {
-                        "description": "New pack sizes",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handlers.PackSizesRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.PackSizesUpdateResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request - Empty array or non-positive values",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -168,6 +107,19 @@ const docTemplate = `{
                     "type": "integer",
                     "minimum": 0,
                     "example": 501
+                },
+                "pack_sizes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "example": [
+                        250,
+                        500,
+                        1000,
+                        2000,
+                        5000
+                    ]
                 }
             }
         },
@@ -212,63 +164,6 @@ const docTemplate = `{
                 "total_packs": {
                     "type": "integer",
                     "example": 2
-                }
-            }
-        },
-        "handlers.PackSizesRequest": {
-            "type": "object",
-            "properties": {
-                "pack_sizes": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    },
-                    "example": [
-                        100,
-                        250,
-                        500,
-                        1000
-                    ]
-                }
-            }
-        },
-        "handlers.PackSizesResponse": {
-            "type": "object",
-            "properties": {
-                "pack_sizes": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    },
-                    "example": [
-                        250,
-                        500,
-                        1000,
-                        2000,
-                        5000
-                    ]
-                }
-            }
-        },
-        "handlers.PackSizesUpdateResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "Pack sizes updated successfully"
-                },
-                "pack_sizes": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    },
-                    "example": [
-                        250,
-                        500,
-                        1000,
-                        2000,
-                        5000
-                    ]
                 }
             }
         }
