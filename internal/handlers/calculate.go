@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/luisfernandomoraes/order-packing-api/internal/domain"
 	"github.com/luisfernandomoraes/order-packing-api/internal/response"
@@ -19,28 +18,11 @@ func NewCalculateHandler(calculator *domain.PackCalculator) *CalculateHandler {
 }
 
 func (h *CalculateHandler) Handle(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		h.handleGet(w, r)
-	case http.MethodPost:
-		h.handlePost(w, r)
-	default:
+	if r.Method != http.MethodPost {
 		response.Error(w, http.StatusMethodNotAllowed, "Method not allowed")
-	}
-}
-
-func (h *CalculateHandler) handleGet(w http.ResponseWriter, r *http.Request) {
-	orderStr := r.URL.Query().Get("order")
-	order, err := strconv.Atoi(orderStr)
-	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Invalid order parameter")
 		return
 	}
 
-	h.calculate(w, order)
-}
-
-func (h *CalculateHandler) handlePost(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Order int `json:"order"`
 	}
@@ -50,16 +32,12 @@ func (h *CalculateHandler) handlePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.calculate(w, req.Order)
-}
-
-func (h *CalculateHandler) calculate(w http.ResponseWriter, order int) {
-	if order < 0 {
+	if req.Order < 0 {
 		response.Error(w, http.StatusBadRequest, "Order must be positive")
 		return
 	}
 
-	result := h.calculator.Calculate(order)
+	result := h.calculator.Calculate(req.Order)
 
 	responseData := map[string]interface{}{
 		"order":       result.Order,

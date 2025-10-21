@@ -448,3 +448,182 @@ func BenchmarkCalculate_LargeOrder(b *testing.B) {
 		calculator.Calculate(50001)
 	}
 }
+
+func TestPackCalculator_Calculate_WithEmptyPackSizes(t *testing.T) {
+	tests := []struct {
+		name               string
+		initialSizes       []int
+		updatedSizes       []int
+		order              int
+		expectedTotalItems int
+		expectedPacks      map[int]int
+	}{
+		{
+			name:               "should handle empty pack sizes with positive order",
+			initialSizes:       []int{250, 500},
+			updatedSizes:       []int{},
+			order:              100,
+			expectedTotalItems: 0,
+			expectedPacks:      map[int]int{},
+		},
+		{
+			name:               "should handle empty pack sizes with zero order",
+			initialSizes:       []int{},
+			updatedSizes:       []int{},
+			order:              0,
+			expectedTotalItems: 0,
+			expectedPacks:      map[int]int{},
+		},
+		{
+			name:               "should handle empty pack sizes with negative order",
+			initialSizes:       []int{},
+			updatedSizes:       []int{},
+			order:              -50,
+			expectedTotalItems: 0,
+			expectedPacks:      map[int]int{},
+		},
+		{
+			name:               "should handle empty pack sizes after update",
+			initialSizes:       []int{100, 200, 300},
+			updatedSizes:       []int{},
+			order:              500,
+			expectedTotalItems: 0,
+			expectedPacks:      map[int]int{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			calculator := NewPackCalculator(tt.initialSizes)
+			if tt.updatedSizes != nil {
+				calculator.UpdatePackSizes(tt.updatedSizes)
+			}
+
+			result := calculator.Calculate(tt.order)
+
+			assert.Equal(t, tt.order, result.Order)
+			assert.Equal(t, tt.expectedTotalItems, result.TotalItems)
+			assert.Equal(t, tt.expectedPacks, result.Packs)
+		})
+	}
+}
+
+func TestPackCalculator_Calculate_OptimalItemMinimization(t *testing.T) {
+	tests := []struct {
+		name               string
+		packSizes          []int
+		order              int
+		expectedTotalItems int
+		expectedPacks      map[int]int
+		expectedSurplus    int
+	}{
+		{
+			name:               "should prefer fewer items with same pack count",
+			packSizes:          []int{3, 5},
+			order:              6,
+			expectedTotalItems: 6,
+			expectedPacks:      map[int]int{3: 2},
+			expectedSurplus:    0,
+		},
+		{
+			name:               "should minimize items even with different configurations",
+			packSizes:          []int{7, 11},
+			order:              14,
+			expectedTotalItems: 14,
+			expectedPacks:      map[int]int{7: 2},
+			expectedSurplus:    0,
+		},
+		{
+			name:               "should prioritize fewer items over fewer packs",
+			packSizes:          []int{3, 7, 13},
+			order:              9,
+			expectedTotalItems: 9,
+			expectedPacks:      map[int]int{3: 3},
+			expectedSurplus:    0,
+		},
+		{
+			name:               "should find exact match with multiple small packs",
+			packSizes:          []int{4, 7},
+			order:              12,
+			expectedTotalItems: 12,
+			expectedPacks:      map[int]int{4: 3},
+			expectedSurplus:    0,
+		},
+		{
+			name:               "should minimize surplus with mixed pack sizes",
+			packSizes:          []int{6, 9},
+			order:              15,
+			expectedTotalItems: 18,
+			expectedPacks:      map[int]int{9: 2},
+			expectedSurplus:    3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			calculator := NewPackCalculator(tt.packSizes)
+			result := calculator.Calculate(tt.order)
+
+			assert.Equal(t, tt.expectedTotalItems, result.TotalItems)
+			assert.Equal(t, tt.expectedPacks, result.Packs)
+			assert.Equal(t, tt.expectedSurplus, result.GetSurplus())
+		})
+	}
+}
+
+func TestPackCalculator_Calculate_EdgeCasesWithLargePacks(t *testing.T) {
+	tests := []struct {
+		name               string
+		packSizes          []int
+		order              int
+		expectedTotalItems int
+		expectedPacks      map[int]int
+		minSurplus         int
+	}{
+		{
+			name:               "should handle very large pack with small order",
+			packSizes:          []int{10000},
+			order:              1,
+			expectedTotalItems: 10000,
+			expectedPacks:      map[int]int{10000: 1},
+			minSurplus:         9999,
+		},
+		{
+			name:               "should handle single large pack size",
+			packSizes:          []int{1000},
+			order:              500,
+			expectedTotalItems: 1000,
+			expectedPacks:      map[int]int{1000: 1},
+			minSurplus:         500,
+		},
+		{
+			name:               "should handle prime pack sizes",
+			packSizes:          []int{17, 23, 29},
+			order:              50,
+			expectedTotalItems: 51,
+			expectedPacks:      map[int]int{17: 3},
+			minSurplus:         1,
+		},
+		{
+			name:               "should handle coprime pack sizes",
+			packSizes:          []int{13, 17},
+			order:              30,
+			expectedTotalItems: 34,
+			expectedPacks:      map[int]int{17: 2},
+			minSurplus:         4,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			calculator := NewPackCalculator(tt.packSizes)
+			result := calculator.Calculate(tt.order)
+
+			assert.Equal(t, tt.order, result.Order)
+			assert.Equal(t, tt.expectedTotalItems, result.TotalItems)
+			assert.Equal(t, tt.expectedPacks, result.Packs)
+			assert.GreaterOrEqual(t, result.GetSurplus(), tt.minSurplus)
+			assert.GreaterOrEqual(t, result.TotalItems, tt.order)
+		})
+	}
+}
