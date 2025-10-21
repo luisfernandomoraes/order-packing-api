@@ -236,7 +236,7 @@
 
     async function loadCurrentPackSizes() {
         try {
-            const response = await fetch(`${API_URL}/api/pack-sizes/get`);
+            const response = await fetch(`${API_URL}/api/pack-sizes`);
             const data = await response.json();
 
             if (data.pack_sizes) {

@@ -553,9 +553,9 @@ func TestPackCalculator_Calculate_OptimalItemMinimization(t *testing.T) {
 			name:               "should minimize surplus with mixed pack sizes",
 			packSizes:          []int{6, 9},
 			order:              15,
-			expectedTotalItems: 18,
-			expectedPacks:      map[int]int{9: 2},
-			expectedSurplus:    3,
+			expectedTotalItems: 15,
+			expectedPacks:      map[int]int{6: 1, 9: 1},
+			expectedSurplus:    0,
 		},
 	}
 
@@ -608,9 +608,9 @@ func TestPackCalculator_Calculate_EdgeCasesWithLargePacks(t *testing.T) {
 			name:               "should handle coprime pack sizes",
 			packSizes:          []int{13, 17},
 			order:              30,
-			expectedTotalItems: 34,
-			expectedPacks:      map[int]int{17: 2},
-			minSurplus:         4,
+			expectedTotalItems: 30,
+			expectedPacks:      map[int]int{13: 1, 17: 1},
+			minSurplus:         0,
 		},
 	}
 

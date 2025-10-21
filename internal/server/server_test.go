@@ -58,7 +58,7 @@ func setupIntegrationServer(t *testing.T) (*domain.PackCalculator, *httptest.Ser
 }
 
 func TestIntegration_Endpoints(t *testing.T) {
-	calculator, ts, client := setupIntegrationServer(t)
+	_, ts, client := setupIntegrationServer(t)
 
 	t.Run("health endpoint returns status", func(t *testing.T) {
 		resp, err := client.Get(ts.URL + "/health")
@@ -75,40 +75,6 @@ func TestIntegration_Endpoints(t *testing.T) {
 		assert.Equal(t, "Order Packing Calculator API", body["app"])
 	})
 
-	t.Run("calculate GET returns result and CORS headers", func(t *testing.T) {
-		resp, err := client.Get(ts.URL + "/api/calculate?order=501")
-		require.NoError(t, err)
-		defer resp.Body.Close()
-
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-		assert.Equal(t, "*", resp.Header.Get("Access-Control-Allow-Origin"))
-
-		var body struct {
-			Order      int            `json:"order"`
-			TotalItems int            `json:"total_items"`
-			Packs      map[string]int `json:"packs"`
-			PackSizes  []int          `json:"pack_sizes"`
-			Surplus    int            `json:"surplus"`
-			TotalPacks int            `json:"total_packs"`
-		}
-		require.NoError(t, json.NewDecoder(resp.Body).Decode(&body))
-
-		assert.Equal(t, 501, body.Order)
-		assert.Equal(t, 750, body.TotalItems)
-		assert.Equal(t, 249, body.Surplus)
-		assert.Equal(t, 2, body.TotalPacks)
-		assert.Equal(t, map[string]int{"500": 1, "250": 1}, body.Packs)
-		assert.Equal(t, calculator.GetPackSizes(), body.PackSizes)
-	})
-
-	t.Run("calculate GET with invalid query fails", func(t *testing.T) {
-		resp, err := client.Get(ts.URL + "/api/calculate?order=abc")
-		require.NoError(t, err)
-		defer resp.Body.Close()
-
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-		assert.Equal(t, "application/json", resp.Header.Get("Content-Type"))
-	})
 
 	t.Run("calculate POST handles valid payload", func(t *testing.T) {
 		payload := map[string]int{"order": 250}

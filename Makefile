@@ -17,8 +17,8 @@ help:
 	@echo "  make lint-install  - Install golangci-lint"
 	@echo "  make fmt           - Format code"
 	@echo "  make clean         - Remove build artifacts"
-	@echo "  make container-build - Build Docker image $(IMAGE_NAME):$(IMAGE_TAG)"
-	@echo "  make container-run   - Run Docker container mapping port $(PORT)->8080"
+	@echo "  make build-container - Build Docker image $(IMAGE_NAME):$(IMAGE_TAG)"
+	@echo "  make run-container   - Run Docker container mapping port $(PORT)->8080"
 
 # Run the application
 run:
@@ -97,12 +97,12 @@ check: fmt lint test
 	@echo "All checks passed!"
 
 # Build Docker image
-container-build:
+build-container:
 	@echo "Building Docker image $(IMAGE_NAME):$(IMAGE_TAG)..."
 	@docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
 	@echo "Image build complete."
 
 # Run Docker container
-container-run:
+run-container:
 	@echo "Running Docker container on port $(PORT)..."
 	@docker run --rm -p $(PORT):8080 --name $(IMAGE_NAME) $(IMAGE_NAME):$(IMAGE_TAG)
