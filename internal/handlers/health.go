@@ -12,6 +12,13 @@ func NewHealthHandler() *HealthHandler {
 	return &HealthHandler{}
 }
 
+// Handle godoc
+// @Summary Health check endpoint
+// @Description Returns the health status of the API
+// @Tags health
+// @Produce json
+// @Success 200 {object} map[string]string "status: healthy"
+// @Router /health [get]
 func (h *HealthHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	responseData := map[string]string{
 		"status": "healthy",

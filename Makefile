@@ -1,4 +1,4 @@
-.PHONY: help run build test test-verbose test-coverage lint lint-install clean dev container-build container-run
+.PHONY: help run build test test-verbose test-coverage lint lint-install clean dev swagger build-container run-container
 
 IMAGE_NAME ?= order-packing-api
 IMAGE_TAG ?= latest
@@ -16,6 +16,7 @@ help:
 	@echo "  make lint          - Run linter (golangci-lint)"
 	@echo "  make lint-install  - Install golangci-lint"
 	@echo "  make fmt           - Format code"
+	@echo "  make swagger       - Generate Swagger documentation"
 	@echo "  make clean         - Remove build artifacts"
 	@echo "  make build-container - Build Docker image $(IMAGE_NAME):$(IMAGE_TAG)"
 	@echo "  make run-container   - Run Docker container mapping port $(PORT)->8080"
@@ -60,6 +61,13 @@ bench:
 fmt:
 	@echo "Formatting code..."
 	@go fmt ./...
+
+# Generate Swagger documentation
+swagger:
+	@echo "Generating Swagger documentation..."
+	@which swag > /dev/null || go install github.com/swaggo/swag/cmd/swag@latest
+	@swag init -g cmd/api/main.go -o docs
+	@echo "Swagger documentation generated at docs/"
 
 # Install golangci-lint
 lint-install:

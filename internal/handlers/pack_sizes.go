@@ -17,6 +17,22 @@ func NewPackSizesHandler(calculator *domain.PackCalculator) *PackSizesHandler {
 	}
 }
 
+// PackSizesRequest represents the request body for updating pack sizes
+type PackSizesRequest struct {
+	PackSizes []int `json:"pack_sizes" example:"100,250,500,1000"`
+}
+
+// PackSizesResponse represents the response from pack sizes endpoints
+type PackSizesResponse struct {
+	PackSizes []int `json:"pack_sizes" example:"250,500,1000,2000,5000"`
+}
+
+// PackSizesUpdateResponse represents the response from update pack sizes endpoint
+type PackSizesUpdateResponse struct {
+	Message   string `json:"message" example:"Pack sizes updated successfully"`
+	PackSizes []int  `json:"pack_sizes" example:"250,500,1000,2000,5000"`
+}
+
 func (h *PackSizesHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -28,17 +44,32 @@ func (h *PackSizesHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// handleGet godoc
+// @Summary Get current package sizes
+// @Description Returns the currently configured package sizes
+// @Tags pack-sizes
+// @Produce json
+// @Success 200 {object} PackSizesResponse
+// @Router /api/pack-sizes [get]
 func (h *PackSizesHandler) handleGet(w http.ResponseWriter, _ *http.Request) {
-	responseData := map[string]interface{}{
-		"pack_sizes": h.calculator.GetPackSizes(),
+	responseData := PackSizesResponse{
+		PackSizes: h.calculator.GetPackSizes(),
 	}
 	response.JSON(w, http.StatusOK, responseData)
 }
 
+// handlePost godoc
+// @Summary Update package sizes
+// @Description Updates the available package sizes used for calculations
+// @Tags pack-sizes
+// @Accept json
+// @Produce json
+// @Param request body PackSizesRequest true "New pack sizes"
+// @Success 200 {object} PackSizesUpdateResponse
+// @Failure 400 {object} map[string]string "Bad Request - Empty array or non-positive values"
+// @Router /api/pack-sizes [post]
 func (h *PackSizesHandler) handlePost(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		PackSizes []int `json:"pack_sizes"`
-	}
+	var req PackSizesRequest
 
 	if err := response.DecodeJSON(r, &req); err != nil {
 		response.Error(w, http.StatusBadRequest, "Invalid request body")
@@ -59,9 +90,9 @@ func (h *PackSizesHandler) handlePost(w http.ResponseWriter, r *http.Request) {
 
 	h.calculator.UpdatePackSizes(req.PackSizes)
 
-	responseData := map[string]interface{}{
-		"message":    "Pack sizes updated successfully",
-		"pack_sizes": h.calculator.GetPackSizes(),
+	responseData := PackSizesUpdateResponse{
+		Message:   "Pack sizes updated successfully",
+		PackSizes: h.calculator.GetPackSizes(),
 	}
 
 	response.JSON(w, http.StatusOK, responseData)

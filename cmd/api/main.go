@@ -13,7 +13,24 @@ import (
 	"github.com/luisfernandomoraes/order-packing-api/internal/config"
 	"github.com/luisfernandomoraes/order-packing-api/internal/domain"
 	"github.com/luisfernandomoraes/order-packing-api/internal/server"
+
+	_ "github.com/luisfernandomoraes/order-packing-api/docs" // Swagger docs
 )
+
+// @title Order Packing Calculator API
+// @version 1.0
+// @description A REST API to calculate the optimal package combination to fulfill orders, minimizing items shipped and number of packages.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name Luis Fernando Moraes
+// @contact.email luisfernandomoraes@example.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /
+// @schemes http https
 
 func main() {
 	// Load configuration
@@ -36,6 +53,7 @@ func main() {
 		log.Printf("🚀 Server starting on port %s", cfg.Port)
 		log.Printf("📦 Default pack sizes: %v", cfg.DefaultPackSizes)
 		log.Printf("🌐 API: http://localhost:%s/api", cfg.Port)
+		log.Printf("📚 Swagger docs: http://localhost:%s/swagger/index.html", cfg.Port)
 		log.Printf("💚 Health: http://localhost:%s/health", cfg.Port)
 		log.Printf("🎨 UI: http://localhost:%s", cfg.Port)
 

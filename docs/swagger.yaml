@@ -1,0 +1,190 @@
+basePath: /
+definitions:
+  handlers.CalculateRequest:
+    properties:
+      order:
+        example: 501
+        minimum: 0
+        type: integer
+    type: object
+  handlers.CalculateResponse:
+    properties:
+      order:
+        example: 501
+        type: integer
+      pack_sizes:
+        example:
+        - 250
+        - 500
+        - 1000
+        - 2000
+        - 5000
+        items:
+          type: integer
+        type: array
+      packs:
+        additionalProperties:
+          type: integer
+        example:
+          "250": 1
+          "500": 1
+        type: object
+      surplus:
+        example: 249
+        type: integer
+      total_items:
+        example: 750
+        type: integer
+      total_packs:
+        example: 2
+        type: integer
+    type: object
+  handlers.PackSizesRequest:
+    properties:
+      pack_sizes:
+        example:
+        - 100
+        - 250
+        - 500
+        - 1000
+        items:
+          type: integer
+        type: array
+    type: object
+  handlers.PackSizesResponse:
+    properties:
+      pack_sizes:
+        example:
+        - 250
+        - 500
+        - 1000
+        - 2000
+        - 5000
+        items:
+          type: integer
+        type: array
+    type: object
+  handlers.PackSizesUpdateResponse:
+    properties:
+      message:
+        example: Pack sizes updated successfully
+        type: string
+      pack_sizes:
+        example:
+        - 250
+        - 500
+        - 1000
+        - 2000
+        - 5000
+        items:
+          type: integer
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: luisfernandomoraes@example.com
+    name: Luis Fernando Moraes
+  description: A REST API to calculate the optimal package combination to fulfill
+    orders, minimizing items shipped and number of packages.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Order Packing Calculator API
+  version: "1.0"
+paths:
+  /api/calculate:
+    post:
+      consumes:
+      - application/json
+      description: Calculates the best package combination to fulfill an order, minimizing
+        items shipped and number of packages
+      parameters:
+      - description: Order quantity
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CalculateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.CalculateResponse'
+        "400":
+          description: Bad Request - Invalid order or negative value
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "405":
+          description: Method Not Allowed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Calculate optimal package combination
+      tags:
+      - calculate
+  /api/pack-sizes:
+    get:
+      description: Returns the currently configured package sizes
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PackSizesResponse'
+      summary: Get current package sizes
+      tags:
+      - pack-sizes
+    post:
+      consumes:
+      - application/json
+      description: Updates the available package sizes used for calculations
+      parameters:
+      - description: New pack sizes
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PackSizesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.PackSizesUpdateResponse'
+        "400":
+          description: Bad Request - Empty array or non-positive values
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update package sizes
+      tags:
+      - pack-sizes
+  /health:
+    get:
+      description: Returns the health status of the API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'status: healthy'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check endpoint
+      tags:
+      - health
+schemes:
+- http
+- https
+swagger: "2.0"

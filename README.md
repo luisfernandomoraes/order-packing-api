@@ -17,7 +17,9 @@ make build-container
 make run-container
 ```
 
-Access: **http://localhost:8080**
+Access:
+- **API**: http://localhost:8080
+- **Swagger UI**: http://localhost:8080/swagger/index.html
 
 ## 📋 Table of Contents
 
@@ -26,6 +28,7 @@ Access: **http://localhost:8080**
 - [Calculation Logic](#calculation-logic)
 - [Project Structure](#project-structure)
 - [Middlewares](#middlewares)
+- [API Documentation](#api-documentation)
 - [Endpoints](#endpoints)
 - [How to Run](#how-to-run)
 - [Testing](#testing)
@@ -200,6 +203,36 @@ handler := middleware.Chain(
 ```
 
 Order matters: Recovery must be innermost to catch errors from all others.
+
+## 📚 API Documentation
+
+The API is fully documented using **Swagger/OpenAPI 3.0**.
+
+### Access Swagger UI
+
+Once the server is running, access the interactive API documentation at:
+
+**http://localhost:8080/swagger/index.html**
+
+The Swagger UI provides:
+- ✅ Complete API specification
+- ✅ Interactive endpoint testing
+- ✅ Request/response examples
+- ✅ Schema definitions
+- ✅ Try it out functionality
+
+### Generate Swagger Docs
+
+To regenerate the Swagger documentation after making changes to the API:
+
+```bash
+make swagger
+```
+
+This will:
+1. Install `swag` CLI if not already installed
+2. Parse annotations from code
+3. Generate `docs/swagger.json`, `docs/swagger.yaml`, and `docs/docs.go`
 
 ## 🚀 Endpoints
 
