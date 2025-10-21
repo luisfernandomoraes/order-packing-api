@@ -372,9 +372,6 @@ make help           # Show help
 ```bash
 # Server port (default: 8080)
 PORT=8080
-
-# Default package sizes (default: 250,500,1000,2000,5000)
-DEFAULT_PACK_SIZES=250,500,1000,2000,5000
 ```
 
 ## 🧪 Testing

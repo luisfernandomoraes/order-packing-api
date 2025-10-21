@@ -41,11 +41,10 @@ func setupIntegrationServer(t *testing.T) (*httptest.Server, httpClient) {
 	})
 
 	cfg := config.Config{
-		Port:             "0",
-		DefaultPackSizes: []int{250, 500, 1000},
-		ReadTimeout:      time.Second,
-		WriteTimeout:     time.Second,
-		IdleTimeout:      time.Second,
+		Port:         "0",
+		ReadTimeout:  time.Second,
+		WriteTimeout: time.Second,
+		IdleTimeout:  time.Second,
 	}
 
 	srv := New(cfg)
