@@ -1,4 +1,8 @@
-.PHONY: help run build test test-verbose test-coverage lint lint-install clean dev
+.PHONY: help run build test test-verbose test-coverage lint lint-install clean dev container-build container-run
+
+IMAGE_NAME ?= order-packing-api
+IMAGE_TAG ?= latest
+PORT ?= 8080
 
 # Default target
 help:
@@ -13,6 +17,8 @@ help:
 	@echo "  make lint-install  - Install golangci-lint"
 	@echo "  make fmt           - Format code"
 	@echo "  make clean         - Remove build artifacts"
+	@echo "  make container-build - Build Docker image $(IMAGE_NAME):$(IMAGE_TAG)"
+	@echo "  make container-run   - Run Docker container mapping port $(PORT)->8080"
 
 # Run the application
 run:
@@ -89,3 +95,14 @@ deps:
 # Run all checks (fmt, lint, test)
 check: fmt lint test
 	@echo "All checks passed!"
+
+# Build Docker image
+container-build:
+	@echo "Building Docker image $(IMAGE_NAME):$(IMAGE_TAG)..."
+	@docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+	@echo "Image build complete."
+
+# Run Docker container
+container-run:
+	@echo "Running Docker container on port $(PORT)..."
+	@docker run --rm -p $(PORT):8080 --name $(IMAGE_NAME) $(IMAGE_NAME):$(IMAGE_TAG)

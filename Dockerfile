@@ -6,7 +6,9 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o order-packing-api ./cmd/api
 
 FROM scratch
-COPY --from=builder /app/order-packing-api /order-packing-api
+WORKDIR /app
+COPY --from=builder /app/order-packing-api ./order-packing-api
+COPY --from=builder /app/static ./static
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 EXPOSE 8080
-ENTRYPOINT ["/order-packing-api"]
+ENTRYPOINT ["./order-packing-api"]
