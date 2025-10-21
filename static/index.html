@@ -82,6 +82,17 @@
             margin-top: 15px;
         }
 
+        .btn-calculate {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
         .btn-primary:hover {
             background-color: #45a049;
         }
@@ -182,7 +193,7 @@
             <input type="number" id="pack4" placeholder="2000" value="2000">
             <input type="number" id="pack5" placeholder="5000" value="5000">
         </div>
-        <button class="btn-primary" onclick="updatePackSizes()">Submit pack sizes change</button>
+        <button type="submit" class="btn-primary" onclick="updatePackSizes()">Submit pack sizes change</button>
         <div id="packSizeMessage" class="message"></div>
     </div>
 
@@ -191,7 +202,7 @@
     <div class="calculate-section">
         <label for="orderInput">Items:</label>
         <input type="number" id="orderInput" placeholder="263" value="263">
-        <button class="btn-primary" onclick="calculatePacks()">Calculate</button>
+        <button class="btn-calculate" onclick="calculatePacks()">Calculate</button>
     </div>
     <div id="calculateMessage" class="message"></div>
     <div id="loading" class="loading">Calculating...</div>
