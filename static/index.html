@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Packs Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #000;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            margin-top: 40px;
+            color: #000;
+        }
+
+        .section {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #000;
+        }
+
+        .pack-sizes-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .pack-sizes-inputs input {
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #000;
+            border-radius: 0;
+            background-color: white;
+        }
+
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+
+        .btn-primary:active {
+            background-color: #3d8b40;
+        }
+
+        .calculate-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .calculate-section label {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .calculate-section input {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 250px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+
+        .results-table th {
+            background-color: #f0f0f0;
+            padding: 15px;
+            text-align: left;
+            font-size: 20px;
+            font-weight: 700;
+            border: 2px solid #000;
+            color: #000;
+        }
+
+        .results-table td {
+            padding: 15px;
+            border: 2px solid #000;
+            font-size: 16px;
+        }
+
+        .results-table td input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #000;
+            background-color: white;
+            border-radius: 0;
+        }
+
+        .message {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .loading {
+            display: none;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Order Packs Calculator</h1>
+
+    <!-- Pack Sizes Section -->
+    <div class="section">
+        <div class="section-title">Pack Sizes</div>
+        <div class="pack-sizes-inputs">
+            <input type="number" id="pack1" placeholder="250" value="250">
+            <input type="number" id="pack2" placeholder="500" value="500">
+            <input type="number" id="pack3" placeholder="1000" value="1000">
+            <input type="number" id="pack4" placeholder="2000" value="2000">
+            <input type="number" id="pack5" placeholder="5000" value="5000">
+        </div>
+        <button class="btn-primary" onclick="updatePackSizes()">Submit pack sizes change</button>
+        <div id="packSizeMessage" class="message"></div>
+    </div>
+
+    <!-- Calculate Section -->
+    <h2>Calculate packs for order</h2>
+    <div class="calculate-section">
+        <label for="orderInput">Items:</label>
+        <input type="number" id="orderInput" placeholder="263" value="263">
+        <button class="btn-primary" onclick="calculatePacks()">Calculate</button>
+    </div>
+    <div id="calculateMessage" class="message"></div>
+    <div id="loading" class="loading">Calculating...</div>
+
+    <!-- Results Table -->
+    <table class="results-table">
+        <thead>
+        <tr>
+            <th>Pack</th>
+            <th>Quantity</th>
+        </tr>
+        </thead>
+        <tbody id="resultsBody">
+        <tr>
+            <td><input type="text" readonly></td>
+            <td><input type="text" readonly></td>
+        </tr>
+        <tr>
+            <td><input type="text" readonly></td>
+            <td><input type="text" readonly></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:8080';
+
+    // Load pack sizes on page load
+    window.addEventListener('load', loadCurrentPackSizes);
+
+    async function loadCurrentPackSizes() {
+        try {
+            const response = await fetch(`${API_URL}/api/pack-sizes/get`);
+            const data = await response.json();
+
+            if (data.pack_sizes) {
+                const inputs = [
+                    document.getElementById('pack1'),
+                    document.getElementById('pack2'),
+                    document.getElementById('pack3'),
+                    document.getElementById('pack4'),
+                    document.getElementById('pack5')
+                ];
+
+                data.pack_sizes.forEach((size, index) => {
+                    if (inputs[index]) {
+                        inputs[index].value = size;
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading pack sizes:', error);
+        }
+    }
+
+    async function updatePackSizes() {
+        const pack1 = parseInt(document.getElementById('pack1').value);
+        const pack2 = parseInt(document.getElementById('pack2').value);
+        const pack3 = parseInt(document.getElementById('pack3').value);
+        const pack4 = parseInt(document.getElementById('pack4').value);
+        const pack5 = parseInt(document.getElementById('pack5').value);
+
+        const packSizes = [pack1, pack2, pack3, pack4, pack5].filter(size => !isNaN(size) && size > 0);
+
+        if (packSizes.length === 0) {
+            showMessage('packSizeMessage', 'Please enter at least one valid pack size', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/api/pack-sizes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ pack_sizes: packSizes })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                showMessage('packSizeMessage', 'Pack sizes updated successfully!', 'success');
+            } else {
+                showMessage('packSizeMessage', data.message || 'Error updating pack sizes', 'error');
+            }
+        } catch (error) {
+            showMessage('packSizeMessage', 'Error connecting to API', 'error');
+            console.error('Error:', error);
+        }
+    }
+
+    async function calculatePacks() {
+        const order = parseInt(document.getElementById('orderInput').value);
+
+        if (isNaN(order) || order < 0) {
+            showMessage('calculateMessage', 'Please enter a valid order quantity', 'error');
+            return;
+        }
+
+        document.getElementById('loading').style.display = 'block';
+        hideMessage('calculateMessage');
+
+        try {
+            const response = await fetch(`${API_URL}/api/calculate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ order: order })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                displayResults(data);
+                showMessage('calculateMessage', `Total items: ${data.total_items} (Surplus: ${data.total_items - order})`, 'success');
+            } else {
+                showMessage('calculateMessage', 'Error calculating packs', 'error');
+            }
+        } catch (error) {
+            showMessage('calculateMessage', 'Error connecting to API', 'error');
+            console.error('Error:', error);
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    function displayResults(data) {
+        const tbody = document.getElementById('resultsBody');
+        tbody.innerHTML = '';
+
+        if (!data.packs || Object.keys(data.packs).length === 0) {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                    <td><input type="text" readonly value="No packs needed"></td>
+                    <td><input type="text" readonly value="0"></td>
+                `;
+            return;
+        }
+
+        // Sort packs by size (descending)
+        const sortedPacks = Object.entries(data.packs).sort((a, b) => b[0] - a[0]);
+
+        sortedPacks.forEach(([packSize, quantity]) => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                    <td><input type="text" readonly value="${packSize}"></td>
+                    <td><input type="text" readonly value="${quantity}"></td>
+                `;
+        });
+    }
+
+    function showMessage(elementId, message, type) {
+        const messageEl = document.getElementById(elementId);
+        messageEl.textContent = message;
+        messageEl.className = `message ${type}`;
+        messageEl.style.display = 'block';
+    }
+
+    function hideMessage(elementId) {
+        const messageEl = document.getElementById(elementId);
+        messageEl.style.display = 'none';
+    }
+
+    // Allow Enter key to trigger calculation
+    document.getElementById('orderInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            calculatePacks();
+        }
+    });
+</script>
+</body>
+</html>
