@@ -1,6 +1,6 @@
 # Order Packing Calculator API
 
-A REST API built in Go to calculate the optimal package combination to fulfill orders, minimizing items shipped and number of packages.
+An intelligent order packing API built in Go that finds the optimal combination of package sizes to fulfill any order, minimizing shipping waste and number of packages.
 
 ## 🚀 Quick Start
 
@@ -21,17 +21,26 @@ Access:
 - **API**: http://localhost:8080
 - **Swagger UI**: http://localhost:8080/swagger/index.html
 
+## 🌐 Live Demo
+
+Try the application online without installation:
+
+**https://order-packing-api.onrender.com/**
+
+- **Web Interface**: https://order-packing-api.onrender.com/
+- **Swagger API Documentation**: https://order-packing-api.onrender.com/swagger/index.html
+
 ## 📋 Table of Contents
 
-- [Quick Start](#quick-start)
-- [About the Project](#about-the-project)
-- [Calculation Logic](#calculation-logic)
-- [Project Structure](#project-structure)
-- [Middlewares](#middlewares)
-- [API Documentation](#api-documentation)
-- [Endpoints](#endpoints)
-- [How to Run](#how-to-run)
-- [Testing](#testing)
+- [Quick Start](#🚀-quick-start-)
+- [About the Project](#🎯-about-the-project)
+- [Calculation Logic](#🧮-calculation-logic)
+- [Project Structure](#📁-project-structure)
+- [Middlewares](#🔧-middlewares)
+- [API Documentation](#📚-api-documentation)
+- [Endpoints](#🚀-endpoints)
+- [How to Run](#🏃-how-to-run)
+- [Testing](#🧪-testing)
 
 ## 🎯 About the Project
 
@@ -46,6 +55,7 @@ This project implements an optimized package calculation system to fulfill custo
 ### Example
 
 For an order of 501 items with package sizes [250, 500, 1000]:
+
 - ❌ 3x250 = 750 items (3 packages)
 - ❌ 1x1000 = 1000 items (1 package, but too much waste)
 - ✅ 1x500 + 1x250 = 750 items (2 packages) ← Optimal solution
@@ -65,9 +75,9 @@ type solution struct {
 }
 ```
 
-### Algorithm
+## Algorithm: Dynamic Programming
 
-1. **DP Table**: Creates a table where `dp[i]` represents the best solution for `i` items
+1. **Dynamic Programming Table**: Creates a table where `dp[i]` represents the best solution for `i` items
 2. **Bottom-Up Construction**: For each quantity from 1 to `order + largestPack`:
    - Try adding each available package size
    - Compare with the current best solution for that quantity
@@ -100,7 +110,7 @@ func isBetterSolution(new, current *solution) bool {
 
 ## 📁 Project Structure
 
-```
+```sh
 order-packing-api/
 ├── cmd/
 │   └── api/
@@ -159,22 +169,26 @@ Access-Control-Allow-Headers: Content-Type
 ```
 
 **Responsibilities**:
+
 - Allows requests from any origin
 - Supports GET, POST, OPTIONS methods
 - Handles preflight requests (OPTIONS)
 
 ### 2. **Logging** (`middleware/logging.go`)
+
 ```go
 // Logs information about each request
 log.Printf("%s %s %d %v %s", method, path, statusCode, duration, remoteAddr)
 ```
 
 **Responsibilities**:
+
 - Logs method, path, status code
 - Measures response time
 - Logs client remote address
 
 ### 3. **Recovery** (`middleware/recovery.go`)
+
 ```go
 // Recovers from panics and returns 500 error
 defer func() {
@@ -186,6 +200,7 @@ defer func() {
 ```
 
 **Responsibilities**:
+
 - Captures unhandled panics
 - Logs complete stack trace
 - Returns appropriate error response
@@ -215,11 +230,11 @@ Once the server is running, access the interactive API documentation at:
 **http://localhost:8080/swagger/index.html**
 
 The Swagger UI provides:
+
 - ✅ Complete API specification
 - ✅ Interactive endpoint testing
 - ✅ Request/response examples
 - ✅ Schema definitions
-- ✅ Try it out functionality
 
 ### Generate Swagger Docs
 
@@ -230,6 +245,7 @@ make swagger
 ```
 
 This will:
+
 1. Install `swag` CLI if not already installed
 2. Parse annotations from code
 3. Generate `docs/swagger.json`, `docs/swagger.yaml`, and `docs/docs.go`
@@ -243,6 +259,7 @@ This will:
 Checks if the API is running.
 
 **Response**:
+
 ```json
 {
   "status": "healthy",
