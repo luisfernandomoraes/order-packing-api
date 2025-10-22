@@ -17,6 +17,7 @@ help:
 	@echo "  make lint-install  - Install golangci-lint"
 	@echo "  make fmt           - Format code"
 	@echo "  make swagger       - Generate Swagger documentation"
+	@echo "  make swagger-install - Install swag CLI tool"
 	@echo "  make clean         - Remove build artifacts"
 	@echo "  make build-container - Build Docker image $(IMAGE_NAME):$(IMAGE_TAG)"
 	@echo "  make run-container   - Run Docker container mapping port $(PORT)->8080"
@@ -61,6 +62,12 @@ bench:
 fmt:
 	@echo "Formatting code..."
 	@go fmt ./...
+
+
+# Install swag CLI tool
+swagger-install:
+	@echo "Installing swag CLI tool..."
+	@which swag > /dev/null || go install github.com/swaggo/swag/cmd/swag@latest
 
 # Generate Swagger documentation
 swagger:
