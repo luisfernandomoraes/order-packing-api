@@ -359,7 +359,9 @@
 </div>
 
 <script>
-    const API_URL = 'http://localhost:8080';
+    const API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:8080'
+    : 'https://order-packing-api.onrender.com';
 
     // Load pack sizes on page load
     window.addEventListener('load', loadCurrentPackSizes);

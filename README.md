@@ -2,6 +2,12 @@
 
 An intelligent order packing API built in Go that finds the optimal combination of package sizes to fulfill any order, minimizing shipping waste and number of packages.
 
+## 🧰 Prerequisites
+
+- **Go** 1.24+
+- **Make**
+- **Docker**
+
 ## 🚀 Quick Start
 
 ```bash
@@ -18,17 +24,16 @@ make run-container
 ```
 
 Access:
-- **API**: http://localhost:8080
+
+- **Web Interface**: http://localhost:8080
 - **Swagger UI**: http://localhost:8080/swagger/index.html
 
 ## 🌐 Live Demo
 
-Try the application online without installation:
-
-**https://order-packing-api.onrender.com/**
+Try the application online:
 
 - **Web Interface**: https://order-packing-api.onrender.com/
-- **Swagger API Documentation**: https://order-packing-api.onrender.com/swagger/index.html
+- **Swagger UI**: https://order-packing-api.onrender.com/swagger/index.html
 
 ## 📋 Table of Contents
 
@@ -161,6 +166,7 @@ order-packing-api/
 The application uses a chain middleware architecture:
 
 ### 1. **CORS** (`middleware/cors.go`)
+
 ```go
 // Adds CORS headers to allow cross-origin requests
 Access-Control-Allow-Origin: *
@@ -276,6 +282,7 @@ Checks if the API is running.
 Calculates the best package combination for an order.
 
 **Request Body**:
+
 ```json
 {
   "order": 501
@@ -283,6 +290,7 @@ Calculates the best package combination for an order.
 ```
 
 **Response**:
+
 ```json
 {
   "order": 501,
@@ -298,6 +306,7 @@ Calculates the best package combination for an order.
 ```
 
 **Validations**:
+
 - ❌ `order < 0`: Returns 400 "Order must be positive"
 - ❌ Invalid JSON: Returns 400 "Invalid request body"
 
@@ -310,6 +319,7 @@ Calculates the best package combination for an order.
 Returns the configured package sizes.
 
 **Response**:
+
 ```json
 {
   "pack_sizes": [250, 500, 1000, 2000, 5000]
@@ -325,6 +335,7 @@ Returns the configured package sizes.
 Updates the available package sizes.
 
 **Request Body**:
+
 ```json
 {
   "pack_sizes": [100, 250, 500, 1000]
@@ -332,6 +343,7 @@ Updates the available package sizes.
 ```
 
 **Response**:
+
 ```json
 {
   "message": "Pack sizes updated successfully",
@@ -340,6 +352,7 @@ Updates the available package sizes.
 ```
 
 **Validations**:
+
 - ❌ Empty array: Returns 400 "Pack sizes cannot be empty"
 - ❌ Negative or zero values: Returns 400 "All pack sizes must be positive"
 
@@ -353,14 +366,10 @@ Serves the interactive web interface to use the API.
 
 ## 🏃 How to Run
 
-### Prerequisites
-
-- Go 1.21 or higher
-- Make (optional, but recommended)
-
-### Using Make (Recommended)
+### Using Make
 
 #### 1. Run the application
+
 ```bash
 make run
 ```
@@ -368,21 +377,25 @@ make run
 The API will be available at `http://localhost:8080`
 
 #### 2. Run in development mode (with auto-reload)
+
 ```bash
 make dev
 ```
 
 #### 3. Run tests
+
 ```bash
 make test
 ```
 
 #### 4. Run tests with coverage
+
 ```bash
 make test-coverage
 ```
 
 #### 5. Build the application
+
 ```bash
 make build
 ```
@@ -390,6 +403,7 @@ make build
 The binary will be created at `./bin/api`
 
 #### 6. Clean generated files
+
 ```bash
 make clean
 ```
@@ -423,12 +437,14 @@ The project has complete test coverage at three levels:
 ### 1. Unit Tests
 
 **Domain Layer** (`internal/domain/pack_calculator_test.go`)
+
 - ✅ Basic cases (exact order, order with surplus, zero order)
 - ✅ Edge cases (prime numbers, coprimes, large packages)
 - ✅ Business rules (item and package minimization)
 - ✅ Branch coverage (empty pack sizes, impossible solutions)
 
 **Handlers** (`internal/handlers/*_test.go`)
+
 - ✅ Input validations (invalid JSON, negative values)
 - ✅ HTTP methods (GET, POST, other methods)
 - ✅ Responses and JSON formats
@@ -437,6 +453,7 @@ The project has complete test coverage at three levels:
 ### 2. Integration Tests
 
 **Server** (`internal/server/server_test.go`)
+
 - ✅ End-to-end endpoints
 - ✅ CORS headers
 - ✅ Middlewares (logging, recovery)
@@ -513,7 +530,7 @@ curl -X POST http://localhost:8080/api/pack-sizes \
 
 ### Benchmarks (Macbook Pro M1, Go 1.25)
 
-```
+```sh
 BenchmarkCalculate_SmallOrder-8     50000    25.3 µs/op
 BenchmarkCalculate_MediumOrder-8    10000   120.5 µs/op
 BenchmarkCalculate_LargeOrder-8      2000   850.2 µs/op

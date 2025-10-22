@@ -34,3 +34,6 @@ go.work.sum
 
 # bin directory for Go binaries
 bin/
+
+# local scripts
+scripts/
