@@ -1,3 +1,4 @@
+// Package middleware provides HTTP middleware utilities: logging, recovery, CORS.
 package middleware
 
 import "net/http"

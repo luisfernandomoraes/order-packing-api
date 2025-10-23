@@ -1,3 +1,4 @@
+// Package config handles application configuration loading and validation.
 package config
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Config holds the application configuration
 type Config struct {
 	Port             string
 	DefaultPackSizes []int

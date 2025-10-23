@@ -1,3 +1,5 @@
+// Package domain contains the core business logic for calculating optimal pack combinations
+// to fulfill customer orders while minimizing items and packs sent.
 package domain
 
 import (

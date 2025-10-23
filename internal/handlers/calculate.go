@@ -1,3 +1,4 @@
+// Package handlers handles HTTP requests for the Order Packing API.
 package handlers
 
 import (
@@ -7,10 +8,12 @@ import (
 	"github.com/luisfernandomoraes/order-packing-api/internal/response"
 )
 
+// CalculateHandler handles the /api/calculate endpoint
 type CalculateHandler struct {
 	calculator *domain.PackCalculator
 }
 
+// NewCalculateHandler creates a new CalculateHandler
 func NewCalculateHandler(calculator *domain.PackCalculator) *CalculateHandler {
 	return &CalculateHandler{
 		calculator: calculator,

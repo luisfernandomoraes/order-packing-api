@@ -8,6 +8,7 @@ import (
 	"github.com/luisfernandomoraes/order-packing-api/internal/response"
 )
 
+// Recovery is a middleware that recovers from panics and returns a 500 error
 func Recovery(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {

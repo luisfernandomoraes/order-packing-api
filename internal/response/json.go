@@ -1,3 +1,4 @@
+// Package response provides utilities for handling JSON HTTP responses and requests.
 package response
 
 import (

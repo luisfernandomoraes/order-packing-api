@@ -6,8 +6,10 @@ import (
 	"github.com/luisfernandomoraes/order-packing-api/internal/response"
 )
 
+// HealthHandler handles the /health endpoint
 type HealthHandler struct{}
 
+// NewHealthHandler creates a new HealthHandler
 func NewHealthHandler() *HealthHandler {
 	return &HealthHandler{}
 }
@@ -19,7 +21,7 @@ func NewHealthHandler() *HealthHandler {
 // @Produce json
 // @Success 200 {object} map[string]string "status: healthy"
 // @Router /health [get]
-func (h *HealthHandler) Handle(w http.ResponseWriter, r *http.Request) {
+func (h *HealthHandler) Handle(w http.ResponseWriter, _ *http.Request) {
 	responseData := map[string]string{
 		"status": "healthy",
 		"app":    "Order Packing Calculator API",

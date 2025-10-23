@@ -7,10 +7,12 @@ import (
 	"github.com/luisfernandomoraes/order-packing-api/internal/response"
 )
 
+// PackSizesHandler handles the /api/pack-sizes endpoint
 type PackSizesHandler struct {
 	calculator *domain.PackCalculator
 }
 
+// NewPackSizesHandler creates a new PackSizesHandler
 func NewPackSizesHandler(calculator *domain.PackCalculator) *PackSizesHandler {
 	return &PackSizesHandler{
 		calculator: calculator,
@@ -33,6 +35,7 @@ type PackSizesUpdateResponse struct {
 	PackSizes []int  `json:"pack_sizes" example:"250,500,1000,2000,5000"`
 }
 
+// Handle acts as a router for GET and POST methods
 func (h *PackSizesHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:

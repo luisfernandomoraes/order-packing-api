@@ -529,9 +529,9 @@ curl -X POST http://localhost:8080/api/pack-sizes \
 ### Benchmarks (Macbook Pro M1, Go 1.25)
 
 ```sh
-BenchmarkCalculate_SmallOrder-8     50000    25.3 µs/op
-BenchmarkCalculate_MediumOrder-8    10000   120.5 µs/op
-BenchmarkCalculate_LargeOrder-8      2000   850.2 µs/op
+BenchmarkCalculate_SmallOrder-8    	    6888	    170168 ns/op	   18336 B/op	     248 allocs/op
+BenchmarkCalculate_MediumOrder-8   	    1437	    833867 ns/op	   71540 B/op	     942 allocs/op
+BenchmarkCalculate_LargeOrder-8    	     355	   3421105 ns/op	  240597 B/op	    3224 allocs/op
 ```
 
 <a id="author"></a>
