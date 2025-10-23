@@ -24,12 +24,12 @@ type CalculateRequest struct {
 
 // CalculateResponse represents the response from calculate endpoint
 type CalculateResponse struct {
-	Order      int            `json:"order" example:"501"`
-	TotalItems int            `json:"total_items" example:"750"`
-	Packs      map[int]int    `json:"packs" example:"250:1,500:1"`
-	PackSizes  []int          `json:"pack_sizes" example:"250,500,1000,2000,5000"`
-	Surplus    int            `json:"surplus" example:"249"`
-	TotalPacks int            `json:"total_packs" example:"2"`
+	Order      int         `json:"order" example:"501"`
+	TotalItems int         `json:"total_items" example:"750"`
+	Packs      map[int]int `json:"packs" example:"250:1,500:1"`
+	PackSizes  []int       `json:"pack_sizes" example:"250,500,1000,2000,5000"`
+	Surplus    int         `json:"surplus" example:"249"`
+	TotalPacks int         `json:"total_packs" example:"2"`
 }
 
 // Handle godoc

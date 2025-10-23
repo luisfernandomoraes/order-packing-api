@@ -75,7 +75,6 @@ func TestIntegration_Endpoints(t *testing.T) {
 		assert.Equal(t, "Order Packing Calculator API", body["app"])
 	})
 
-
 	t.Run("calculate POST handles valid payload", func(t *testing.T) {
 		payload := map[string]int{"order": 250}
 		resp := doJSONRequest(t, client, http.MethodPost, ts.URL+"/api/calculate", payload)

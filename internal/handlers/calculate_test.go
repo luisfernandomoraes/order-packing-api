@@ -7,9 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/luisfernandomoraes/order-packing-api/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/luisfernandomoraes/order-packing-api/internal/domain"
 )
 
 func TestNewCalculateHandler(t *testing.T) {

@@ -10,11 +10,10 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/luisfernandomoraes/order-packing-api/docs" // Swagger docs
 	"github.com/luisfernandomoraes/order-packing-api/internal/config"
 	"github.com/luisfernandomoraes/order-packing-api/internal/domain"
 	"github.com/luisfernandomoraes/order-packing-api/internal/server"
-
-	_ "github.com/luisfernandomoraes/order-packing-api/docs" // Swagger docs
 )
 
 // @title Order Packing Calculator API

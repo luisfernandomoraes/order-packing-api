@@ -17,12 +17,12 @@ func TestNewHealthHandler(t *testing.T) {
 
 func TestHealthHandler_Handle(t *testing.T) {
 	tests := []struct {
-		name               string
-		method             string
-		expectedStatus     int
-		expectedStatusMsg  string
-		expectedAppName    string
-		shouldHaveError    bool
+		name              string
+		method            string
+		expectedStatus    int
+		expectedStatusMsg string
+		expectedAppName   string
+		shouldHaveError   bool
 	}{
 		{
 			name:              "should return healthy status with GET",
