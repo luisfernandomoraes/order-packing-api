@@ -7,8 +7,9 @@ An intelligent order packing API built in Go that finds the optimal combination 
 
 - **Go** 1.24+
 - **Make**
-- **Docker** (for container workflows)
-- Optional: `golangci-lint` and `swag` CLI (install via Make targets when needed)
+- **Docker** (optional, for container workflows)
+
+Development tools (golangci-lint, swag) are automatically installed when needed via `make tools`.
 
 <a id="quick-start"></a>
 ## Quick Start 🚀
@@ -384,20 +385,33 @@ Serves the interactive web interface to use the API.
 
 ### Using Make
 
+#### Development Setup
+- `make deps` — Download and tidy Go module dependencies.
+- `make tools` — Install development tools (golangci-lint v2.5.0, swag v1.16.3).
+
+#### Running the Application
 - `make run` — Start the API on `http://localhost:8080`.
 - `make build` — Compile the binary to `./bin/order-packing-api`.
-- `make test` / `make test-verbose` — Run the test suite (optionally with verbose output).
+
+#### Testing
+- `make test` — Run all tests.
+- `make test-verbose` — Run tests with verbose output.
 - `make test-coverage` — Generate coverage data and an HTML report at `coverage.html`.
 - `make bench` — Execute benchmarks in `internal/domain`.
-- `make fmt` — Format the Go source tree.
-- `make lint` — Run `golangci-lint` (install it via `make lint-install`).
-- `make swagger` — Regenerate the Swagger documentation under `docs/`. (install `swag` via `make swagger-install`).
-- `make deps` — Download and tidy Go module dependencies.
+
+#### Code Quality
+- `make fmt` — Format the Go source tree with gofmt and golangci-lint (gci) (requires `make tools`).
+- `make lint` — Run golangci-lint (requires `make tools`).
+- `make swagger` — Regenerate the Swagger documentation under `docs/` (requires `make tools`).
 - `make check` — Run format, lint, and test targets in sequence.
+
+#### Utilities
 - `make clean` — Remove build artifacts and coverage reports.
+- `make help` — Print the list of targets (default target).
+
+#### Docker
 - `make build-container` — Build a Docker image (`IMAGE_NAME:IMAGE_TAG`).
 - `make run-container` — Run the Docker container exposing `${PORT:-8080}`.
-- `make help` — Print the list of targets (default target).
 
 ### Environment Variables
 

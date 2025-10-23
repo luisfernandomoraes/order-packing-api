@@ -1,4 +1,8 @@
-.PHONY: help run build test test-verbose test-coverage lint lint-install clean dev swagger build-container run-container
+.PHONY: help run build test test-verbose test-coverage lint lint-install clean dev swagger build-container run-container tools deps
+
+# Development tools versions
+GOLANGCI_LINT_VERSION := v2.5.0
+SWAG_VERSION := v1.16.3
 
 IMAGE_NAME ?= order-packing-api
 IMAGE_TAG ?= latest
@@ -13,11 +17,12 @@ help:
 	@echo "  make test-verbose  - Run tests with verbose output"
 	@echo "  make test-coverage - Run tests with coverage report"
 	@echo "  make bench         - Run benchmark tests"
-	@echo "  make lint          - Run linter (golangci-lint)"
-	@echo "  make lint-install  - Install golangci-lint"
-	@echo "  make fmt           - Format code"
-	@echo "  make swagger       - Generate Swagger documentation"
-	@echo "  make swagger-install - Install swag CLI tool"
+	@echo "  make deps          - Download Go dependencies"
+	@echo "  make tools         - Install development tools (golangci-lint, swag)"
+	@echo "  make fmt           - Format code (requires tools)"
+	@echo "  make lint          - Run linter (requires tools)"
+	@echo "  make swagger       - Generate Swagger documentation (requires tools)"
+	@echo "  make check         - Run fmt, lint, and test"
 	@echo "  make clean         - Remove build artifacts"
 	@echo "  make build-container - Build Docker image $(IMAGE_NAME):$(IMAGE_TAG)"
 	@echo "  make run-container   - Run Docker container mapping port $(PORT)->8080"
@@ -59,10 +64,28 @@ bench:
 	@go test -bench=. -benchmem ./internal/domain
 
 # Format code
-fmt:
-	@echo "Formatting code..."
-	@go fmt ./...
+fmt: tools
+	@echo "Formatting code with gofmt and gci..."
+	@gofmt -s -w .
+	@$$(go env GOPATH)/bin/golangci-lint fmt
 
+# Install development tools
+tools:
+	@echo "🔍 Checking development tools..."
+	@if ! command -v golangci-lint >/dev/null 2>&1; then \
+		echo "⬇️  Installing golangci-lint $(GOLANGCI_LINT_VERSION)..."; \
+        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | \
+        sh -s -- -b $$(go env GOPATH)/bin $(GOLANGCI_LINT_VERSION); \
+	else \
+		echo "✅ golangci-lint already installed."; \
+	fi
+	@if ! command -v swag >/dev/null 2>&1; then \
+		echo "⬇️  Installing swag $(SWAG_VERSION)..."; \
+		go install github.com/swaggo/swag/cmd/swag@$(SWAG_VERSION); \
+	else \
+		echo "✅ swag already installed."; \
+	fi
+	@echo "🚀 All development tools are ready!"
 
 # Install swag CLI tool
 swagger-install:
@@ -70,28 +93,22 @@ swagger-install:
 	@which swag > /dev/null || go install github.com/swaggo/swag/cmd/swag@latest
 
 # Generate Swagger documentation
-swagger:
+swagger: tools
 	@echo "Generating Swagger documentation..."
-	@which swag > /dev/null || go install github.com/swaggo/swag/cmd/swag@latest
 	@swag init -g cmd/api/main.go -o docs
 	@echo "Swagger documentation generated at docs/"
 
 # Install golangci-lint
 lint-install:
-	@echo "Installing golangci-lint..."
-	@which golangci-lint > /dev/null || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.55.2
-	@echo "golangci-lint installed successfully"
+	@echo "Installing golangci-lint v2.5.0..."
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | \
+		sh -s -- -b $$(go env GOPATH)/bin v2.5.0
+	@echo "golangci-lint v2.5.0 installed successfully."
 
 # Run linter
-lint:
-	@if command -v golangci-lint > /dev/null; then \
-		echo "Running golangci-lint..."; \
-		golangci-lint run ./...; \
-	else \
-		echo "Error: golangci-lint not found."; \
-		echo "Install with: make lint-install"; \
-		exit 1; \
-	fi
+lint: tools
+	@echo "Running golangci-lint..."
+	@golangci-lint run
 
 # Clean build artifacts
 clean:

@@ -1,0 +1,53 @@
+version: "2"
+
+run:
+  timeout: 3m
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+  tests: false
+  skip-files:
+    - "**/*_test.go"
+  skip-dirs:
+    - vendor
+
+linters:
+  enable:
+    - revive
+    - asasalint
+    - bodyclose
+    - contextcheck
+    - gosec
+    - usestdlibvars
+    - errorlint
+    - wastedassign
+    - unconvert
+    - prealloc
+    - noctx
+    - nilerr
+    - gocritic
+    - goconst
+    - containedctx
+    - zerologlint
+    - errcheck
+
+issues:
+  exclude-use-default: false
+  exclude-rules:
+    - path: "test/**"
+      linters:
+        - revive
+
+formatters:
+  enable:
+    - gofmt
+    - gci
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/luisfernandomoraes/order-packing-api)
+      no-inline-comments: true
+      no-prefix-comments: true
+      custom-order: true
+      no-lex-order: true
