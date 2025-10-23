@@ -1,3 +1,4 @@
+// Package main starts the HTTP server for the Order Packing API.
 package main
 
 import (
@@ -67,11 +68,13 @@ func main() {
 
 	// Graceful shutdown with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("❌ Server forced to shutdown: %v", err)
+		log.Printf("❌ Server forced to shutdown: %v", err)
+		cancel()
+		os.Exit(1)
 	}
 
+	cancel()
 	log.Println("✅ Server stopped gracefully")
 }
